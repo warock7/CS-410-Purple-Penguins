@@ -41,13 +41,13 @@ public class Parser {
 
 		// set up tokens queue
 		// while (x < 10) (
-//		tokens.add(new Token(Token.TokenClass.WHILE_KW));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "x"));
-//		tokens.add(new Token(Token.TokenClass.LT_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "10"));
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+		tokens.add(new Token(Token.TokenClass.WHILE_KW));
+		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "x"));
+		tokens.add(new Token(Token.TokenClass.LT_OP));
+		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "10"));
+		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
 //
 //		// n = i * j;
 //		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
@@ -68,7 +68,7 @@ public class Parser {
 //		//
 //
 //		// )
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
 //
 //		// for (int i = 0; i > j; i + 1) (x = i * j;)
 //		tokens.add(new Token(Token.TokenClass.FOR_KW));
@@ -97,21 +97,21 @@ public class Parser {
 //		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
 
 		// if (x == 32)
-		tokens.add(new Token(Token.TokenClass.IF_KW));
-		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.EQUAL_OP));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "32"));
-		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-		// (x = x / 1;)
-		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.ASS_OP));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.DIV_OP));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+//		tokens.add(new Token(Token.TokenClass.IF_KW));
+//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.EQUAL_OP));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "32"));
+//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+//		// (x = x / 1;)
+//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.ASS_OP));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.DIV_OP));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
+//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
 
 //		tokens.add(new Token(Token.TokenClass.ELSE_KW));
 //		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
@@ -456,70 +456,6 @@ public class Parser {
 
 	public static String getLabel() {
 		return "L" + labelCounter++;
-	}
-
-}
-
-class Atom {
-	enum OpCode {
-		ADD, SUB, MUL, DIV, JMP, NEG, LBL, TST, MOV
-	}
-
-	private OpCode opCode;
-	private Object left, right, result, dest, cmp;
-
-	public Atom(OpCode opCode, Object left, Object right, Object result, Object cmp, Object dest) {
-		this.opCode = opCode;
-		this.left = left;
-		this.right = right;
-		this.result = result;
-		this.dest = dest;
-		this.cmp = cmp;
-	}
-
-	public Atom(OpCode opCode, Object left, Object right, Object result) {
-		this.opCode = opCode;
-		this.left = left;
-		this.right = right;
-		this.result = result;
-		this.cmp = "";
-		this.dest = "";
-	}
-
-	@Override
-	public String toString() {
-//		return String.format("(%s, %s, %s, %s, %s, %s)", opCode, left, right, result, dest, cmp);
-
-		// create a new string builder
-		StringBuilder str = new StringBuilder();
-
-		// add open parenthesis
-		str.append("(");
-
-		// if the field isn't null or empty, add it to atom
-		if (this.opCode != null)
-			str.append(this.opCode);
-		if (this.left != "") {
-			str.append(", " + this.left);
-		}
-		if (this.right != "") {
-			str.append(", " + this.right);
-		}
-		if (this.result != "") {
-			str.append(", " + this.result);
-		}
-		if (this.cmp != "") {
-			str.append(", " + this.cmp);
-		}
-		if (this.dest != "") {
-			str.append(", " + this.dest);
-		}
-
-		// add the close parenthesis
-		str.append(")");
-
-		// return the string builder
-		return str.toString();
 	}
 
 }
