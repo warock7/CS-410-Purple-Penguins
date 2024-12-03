@@ -79,6 +79,8 @@ public class CodeGenerator {
 
 		// First pass logic to build labels?
 
+		buildLabels();
+
 		// Second pass logic to generate instructions?
 
 	}
@@ -113,6 +115,29 @@ public class CodeGenerator {
 
 		writeInstruction(word); // write the instruction to the file.
 	}
+
+	public void buildLabels() {
+		getAtom();
+        while (loop == true) {
+            if (current.getOpcode().equals(Atom.OpCode.LBL)) {
+                labelTable.put(current.getLeft(), pc);
+            } 
+            
+            else if (current.getOpcode().equals(Atom.OpCode.MOV)|| current.getOpcode().equals(Atom.OpCode.JMP)) {
+                pc += 2;
+            } 
+            
+            else if (current.getOpcode().equals(Atom.OpCode.NEG)){
+                pc += 3;
+            } 
+            
+            else {
+                pc += 4;
+            }
+            getAtom();
+        }
+	}
+	
 
 	// To output bytes to file, many options on how to do so.
 	// Could use byte buffer to hold bytes and write to file
