@@ -116,26 +116,32 @@ public class CodeGenerator {
 		writeInstruction(word); // write the instruction to the file.
 	}
 
+	//First pass
+	//Builds a table of labels with their corresponding pc numbers
 	public void buildLabels() {
+		//Gets initial atom
 		getAtom();
-        while (loop == true) {
-            if (current.getOpcode().equals(Atom.OpCode.LBL)) {
-                labelTable.put(current.getLeft(), pc);
-            } 
-            
-            else if (current.getOpcode().equals(Atom.OpCode.MOV)|| current.getOpcode().equals(Atom.OpCode.JMP)) {
-                pc += 2;
-            } 
-            
-            else if (current.getOpcode().equals(Atom.OpCode.NEG)){
-                pc += 3;
-            } 
-            
-            else {
-                pc += 4;
-            }
-            getAtom();
-        }
+		//Loop through queue until it is empty
+	        while (loop == true) {
+		    //If current atom is a Label, add it to the table
+	            if (current.getOpcode().equals(Atom.OpCode.LBL)) {
+	                labelTable.put(current.getLeft(), pc);
+	            } 
+	            //Increment pc based on OpCodes, different OpCodes require varying number of instructions
+	            else if (current.getOpcode().equals(Atom.OpCode.MOV)|| current.getOpcode().equals(Atom.OpCode.JMP)) {
+	                pc += 2;
+	            } 
+	            
+	            else if (current.getOpcode().equals(Atom.OpCode.NEG)){
+	                pc += 3;
+	            } 
+	            
+	            else {
+	                pc += 4;
+	            }
+	            //Get atoms until queue is empty
+	            getAtom();
+	        }
 	}
 	
 
