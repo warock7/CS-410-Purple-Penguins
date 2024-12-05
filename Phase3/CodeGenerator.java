@@ -1,14 +1,15 @@
+import static java.nio.file.StandardOpenOption.APPEND;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.stream.Stream;
-import static java.nio.file.StandardOpenOption.APPEND;
 
 public class CodeGenerator {
 
@@ -17,10 +18,6 @@ public class CodeGenerator {
 	private Path atomFile; // File of Atoms from Parser, will be read in.
 
 	private static Queue<Atom> atoms = new LinkedList<Atom>(); // Queue to hold atoms
-	private Atom current; // Current Atom to turn into instruction
-
-	private boolean loop; // boolean to use when looping through atoms to generate instructions (keep
-							// generating instructions while there are atoms left).
 
 	// Op Codes
 	static final int CLR = 0x0;
@@ -47,7 +44,7 @@ public class CodeGenerator {
 
 	// Address Table
 	// Used during the second pass
-	static HashMap<Object, Integer> addressTable = new HashMap<>();
+	static HashMap<Object, Integer> addressTable = new LinkedHashMap<>();
 
 	// Main method for testing
 	public static void main(String[] args) {
@@ -80,32 +77,28 @@ public class CodeGenerator {
 		atomFile = BASE.resolve("atoms");
 		readAtoms(atomFile);
 		System.out.println(atoms); // Print atoms *FOR TESTING PURPOSES*
-//		getAtom();
-//		gen(ADD, 0, r, 100);
 
-		// First pass logic to build labels?
-
+		// First pass logic to build labels
 		buildLabels();
 
 		pc++;
 
-		// Second pass logic to generate instructions?
-
+		// Second pass logic to generate instructions
 		secondPass();
 
 		// Write variables and constants to file
-		addressTable.entrySet().stream()
-			.sorted((kv1, kv2) -> kv1.getValue() - kv2.getValue())
-			.map(kv -> {
-					Object k = kv.getKey();
-					if (k instanceof Integer i) {
-						return i;
-					} else if (k instanceof Double d) {
-						return Float.floatToIntBits(d.floatValue());
-					} else {
-						return 0;
-					}})
-			.forEach(i -> writeInstruction(i));
+		addressTable.entrySet().stream().map(kv -> {
+			Object k = kv.getKey();
+			if (k instanceof Integer i) {
+				return i;
+			} else if (k instanceof Double d) {
+				return Float.floatToIntBits(d.floatValue());
+			} else {
+				return 0;
+			}
+		}).forEach(i -> writeInstruction(i));
+
+		System.out.println(labelTable);
 	}
 
 	/**
@@ -119,15 +112,7 @@ public class CodeGenerator {
 	 * @param address - address to store the result.
 	 */
 	public void gen(int op, int cmp, int r, int address) {
-
-		// Need to do a mix of OR, AND, and bit shifting to make instruction
-		// Value of each parameter will need to be shifted to it's place in instruction
-		// ex: 0000000000 (imagine this is 32 bit instruction)
-		// 010 (imagine this is opcode value)
-		// << shift it over to far left!
-		// 0100000000
-		// etc. for rest of instruction
-		Integer word = 0;
+		int word = 0;
 		word |= (op & 0xF) << 28; // add opcode
 		word |= (cmp & 0xF) << 24; // add cmp
 		word |= (r & 0xF) << 20; // add register
@@ -140,38 +125,42 @@ public class CodeGenerator {
 		writeInstruction(word); // write the instruction to the file.
 	}
 
-	//First pass
-	//Builds a table of labels with their corresponding pc numbers
+	// First pass
+	// Builds a table of labels with their corresponding pc numbers
 	public void buildLabels() {
-		//Loop through queue
+		// Loop through queue
 		for (var current : atoms) {
-		    //If current atom is a Label, add it to the table
-	            if (current.getOpcode().equals(Atom.OpCode.LBL)) {
-			    labelTable.put(current.getDest(), pc);
-	            } 
-	            //Increment pc based on OpCodes, different OpCodes require varying number of instructions
-	            else if (current.getOpcode().equals(Atom.OpCode.MOV)|| current.getOpcode().equals(Atom.OpCode.JMP)) {
-	                pc += 2;
-	            } 
-	            
-	            else {
-	                pc += 3;
-	            }
-	        }
+			// If current atom is a Label, add it to the table
+			if (current.getOpcode().equals(Atom.OpCode.LBL)) {
+				labelTable.put(current.getDest(), pc);
+			}
+			// Increment pc based on OpCodes, different OpCodes require varying number of
+			// instructions
+			else if (current.getOpcode().equals(Atom.OpCode.MOV) || current.getOpcode().equals(Atom.OpCode.JMP)) {
+				pc += 2;
+			}
+
+			else {
+				pc += 3;
+			}
+		}
 	}
 
-	//Second pass
-	//Generates the code while using the label table to fill in labels
+	// Second pass
+	// Generates the code while using the label table to fill in labels
+	@SuppressWarnings("incomplete-switch")
 	public void secondPass() {
-		var current = atoms.poll();
+
 		r = 1;
-		//Loop through the queue until it is empty
+		// Loop through the queue until it is empty
 		while (atoms.size() > 0) {
-			//If left, right, or result do not have addresses, give them one
+
+			var current = atoms.poll();
+			// If left, right, or result do not have addresses, give them one
 			Stream.of(current.getLeft(), current.getRight(), current.getResult())
-				.filter(value -> value != null && value != "" && addressTable.get(value) == null)
-				.forEach(value -> addressTable.put(value, pc++));
-			//Write instructions according to the current opcode
+					.filter(value -> value != null && value != "" && addressTable.get(value) == null)
+					.forEach(value -> addressTable.put(value, pc++));
+			// Write instructions according to the current opcode
 			switch (current.getOpcode()) {
 			case ADD -> {
 				gen(LOD, 0, r, addressTable.get(current.getLeft()));
@@ -230,7 +219,7 @@ public class CodeGenerator {
 	 * 
 	 * @param word - instruction to write to the file
 	 */
-	void writeInstruction(Integer word) {
+	void writeInstruction(int word) {
 		try {
 			var bytes = ByteBuffer.allocate(4).putInt(word).array();
 			Files.write(binaryFile, bytes, APPEND);
@@ -256,17 +245,4 @@ public class CodeGenerator {
 		}
 
 	}
-
-	/**
-	 * This method attempts to retrieve an atom from the queue. If the queue is
-	 * empty, the loop boolean is set to false.
-	 */
-	void getAtom() {
-		try {
-			current = atoms.remove();
-		} catch (NoSuchElementException e) {
-			loop = false;
-		}
-	}
-
 }
