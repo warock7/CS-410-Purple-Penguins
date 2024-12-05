@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.stream.Stream;
+import static java.nio.file.StandardOpenOption.APPEND;
 
 public class CodeGenerator {
 
@@ -41,7 +43,11 @@ public class CodeGenerator {
 
 	// Label Table
 	// Used during first and second passes
-	static HashMap<String, Integer> labelTable = new HashMap<>();
+	static HashMap<Object, Integer> labelTable = new HashMap<>();
+
+	// Address Table
+	// Used during the second pass
+	static HashMap<Object, Integer> addressTable = new HashMap<>();
 
 	// Main method for testing
 	public static void main(String[] args) {
@@ -56,8 +62,8 @@ public class CodeGenerator {
 		try {
 			Files.createDirectories(BASE);
 			binaryFile = BASE.resolve("bytes");
-			if (Files.notExists(binaryFile))
-				Files.createFile(binaryFile);
+			Files.deleteIfExists(binaryFile);
+			Files.createFile(binaryFile);
 
 			atomFile = BASE.resolve("atoms");
 		} catch (IOException e) {
@@ -74,15 +80,32 @@ public class CodeGenerator {
 		atomFile = BASE.resolve("atoms");
 		readAtoms(atomFile);
 		System.out.println(atoms); // Print atoms *FOR TESTING PURPOSES*
-		getAtom();
-		gen(ADD, 0, r, 100);
+//		getAtom();
+//		gen(ADD, 0, r, 100);
 
 		// First pass logic to build labels?
 
 		buildLabels();
 
+		pc++;
+
 		// Second pass logic to generate instructions?
 
+		secondPass();
+
+		// Write variables and constants to file
+		addressTable.entrySet().stream()
+			.sorted((kv1, kv2) -> kv1.getValue() - kv2.getValue())
+			.map(kv -> {
+					Object k = kv.getKey();
+					if (k instanceof Integer i) {
+						return i;
+					} else if (k instanceof Double d) {
+						return Float.floatToIntBits(d.floatValue());
+					} else {
+						return 0;
+					}})
+			.forEach(i -> writeInstruction(i));
 	}
 
 	/**
@@ -109,6 +132,7 @@ public class CodeGenerator {
 		word |= (cmp & 0xF) << 24; // add cmp
 		word |= (r & 0xF) << 20; // add register
 		word |= (address & 0xFFFFF); // add address
+		System.out.printf("%d, %d, %d, %d\t", op, cmp, r, address);
 		System.out.println(String.format("%32s", Integer.toBinaryString(word)).replace(' ', '0')); // Print instruction
 																									// out *FOR TESTING
 																									// PURPOSES*
@@ -119,31 +143,79 @@ public class CodeGenerator {
 	//First pass
 	//Builds a table of labels with their corresponding pc numbers
 	public void buildLabels() {
-		//Gets initial atom
-		getAtom();
-		//Loop through queue until it is empty
-	        while (loop == true) {
+		//Loop through queue
+		for (var current : atoms) {
 		    //If current atom is a Label, add it to the table
 	            if (current.getOpcode().equals(Atom.OpCode.LBL)) {
-	                labelTable.put(current.getLeft(), pc);
+			    labelTable.put(current.getDest(), pc);
 	            } 
 	            //Increment pc based on OpCodes, different OpCodes require varying number of instructions
 	            else if (current.getOpcode().equals(Atom.OpCode.MOV)|| current.getOpcode().equals(Atom.OpCode.JMP)) {
 	                pc += 2;
 	            } 
 	            
-	            else if (current.getOpcode().equals(Atom.OpCode.NEG)){
-	                pc += 3;
-	            } 
-	            
 	            else {
-	                pc += 4;
+	                pc += 3;
 	            }
-	            //Get atoms until queue is empty
-	            getAtom();
 	        }
 	}
-	
+
+	//Second pass
+	//Generates the code while using the label table to fill in labels
+	public void secondPass() {
+		var current = atoms.poll();
+		r = 1;
+		//Loop through the queue until it is empty
+		while (atoms.size() > 0) {
+			//If left, right, or result do not have addresses, give them one
+			Stream.of(current.getLeft(), current.getRight(), current.getResult())
+				.filter(value -> value != null && value != "" && addressTable.get(value) == null)
+				.forEach(value -> addressTable.put(value, pc++));
+			//Write instructions according to the current opcode
+			switch (current.getOpcode()) {
+			case ADD -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(ADD, 0, r, addressTable.get(current.getRight()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			case SUB -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(SUB, 0, r, addressTable.get(current.getRight()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			case NEG -> {
+				gen(CLR, 0, r, 0);
+				gen(SUB, 0, r, addressTable.get(current.getLeft()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			case MUL -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(MUL, 0, r, addressTable.get(current.getRight()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			case DIV -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(DIV, 0, r, addressTable.get(current.getRight()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			case JMP -> {
+				gen(CMP, 0, 0, 0);
+				gen(JMP, 0, 0, labelTable.get(current.getDest()));
+			}
+			case TST -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(CMP, (int) current.getCmp(), r, addressTable.get(current.getRight()));
+				gen(JMP, 0, 0, labelTable.get(current.getDest()));
+			}
+			case MOV -> {
+				gen(LOD, 0, r, addressTable.get(current.getLeft()));
+				gen(STO, 0, r, addressTable.get(current.getResult()));
+			}
+			}
+			current = atoms.poll();
+		}
+		gen(HLT, 0, 0, 0);
+	}
 
 	// To output bytes to file, many options on how to do so.
 	// Could use byte buffer to hold bytes and write to file
@@ -160,8 +232,8 @@ public class CodeGenerator {
 	 */
 	void writeInstruction(Integer word) {
 		try {
-			var bytes = ByteBuffer.allocate(32).putInt(word).array();
-			Files.write(binaryFile, bytes);
+			var bytes = ByteBuffer.allocate(4).putInt(word).array();
+			Files.write(binaryFile, bytes, APPEND);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
