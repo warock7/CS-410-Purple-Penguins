@@ -36,4 +36,39 @@ public class Token {
 	public String toString() {
 		return "Token: " + "class=" + name + ", value= '" + value + '\'';
 	}
+
+	public static Token parseToken(String line) {
+		line = line.trim();
+
+		// Split the line into parts based on ', ' separator
+		String[] parts = line.split(", ");
+
+		// Extract the class part
+		String classPart = parts[0].split("=")[1]; // Extracts the text after 'class='
+
+		// Extract the value part
+		String valuePart = parts[1].split("=")[1].trim(); // Extracts the text after 'value='
+
+		// Remove the single quotes around the value (if present)
+		if (valuePart.startsWith("'") && valuePart.endsWith("'")) {
+			valuePart = valuePart.substring(1, valuePart.length() - 1);
+		}
+
+		// Get the TokenClass from the classPart
+		TokenClass tokenClass = TokenClass.valueOf(classPart);
+
+		// Check if the value is "null" and set the value accordingly
+		Object value = "null".equals(valuePart) ? null : valuePart;
+
+		// If the TokenClass requires a numeric value, cast appropriately
+		if (tokenClass == TokenClass.INT_LITERAL) {
+			value = Integer.parseInt(value.toString());
+		} else if (tokenClass == TokenClass.DOUBLE_LITERAL) {
+			value = Double.parseDouble(value.toString());
+		}
+
+		// Return the new Token
+		return value == null ? new Token(tokenClass) : new Token(tokenClass, value);
+	}
+
 }

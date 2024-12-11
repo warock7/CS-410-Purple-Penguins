@@ -15,6 +15,7 @@ public class Parser {
 
 	private static final Path BASE = Paths.get("db", "compiler"); // Directories where atom and instruction files exist.
 	private Path atomFile; // File of Atoms from Parser, will be written to.
+	private Path tokenFile;
 
 	private static int tempCounter = 0;
 	private static int labelCounter = 0;
@@ -29,95 +30,95 @@ public class Parser {
 		// x = - 7;
 //		tokens.add(new Token(Token.TokenClass.INT_KW));
 //		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "-7"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.SUB_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "y"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////		tokens.add(new Token(Token.TokenClass.ASS_OP));
+////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "-7"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
 ////
-////		// int n = 0;
-//		tokens.add(new Token(Token.TokenClass.INT_KW));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-
-		// set up tokens queue
-		// while (x < 10) (
-		tokens.add(new Token(Token.TokenClass.WHILE_KW));
-		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "x"));
-		tokens.add(new Token(Token.TokenClass.LT_OP));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "10"));
-		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+////		tokens.add(new Token(Token.TokenClass.ASS_OP));
+////		tokens.add(new Token(Token.TokenClass.SUB_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "y"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+//////
+//////		// int n = 0;
+////		tokens.add(new Token(Token.TokenClass.INT_KW));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
+////		tokens.add(new Token(Token.TokenClass.ASS_OP));
+////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
 //
-//		// n = i * j;
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
-		tokens.add(new Token(Token.TokenClass.ASS_OP));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-		tokens.add(new Token(Token.TokenClass.MULT_OP));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
-		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//
-////		x = x / 1;
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.ASS_OP));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.ADD_OP));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//
-//		//
-//
-//		// )
-		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//
-//		// for (int i = 0; i > j; i + 1) (x = i * j;)
-//		tokens.add(new Token(Token.TokenClass.FOR_KW));
+//		// set up tokens queue
+//		// while (x < 10) (
+//		tokens.add(new Token(Token.TokenClass.WHILE_KW));
 //		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.INT_KW));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-//		tokens.add(new Token(Token.TokenClass.GT_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-//		tokens.add(new Token(Token.TokenClass.ADD_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "x"));
+//		tokens.add(new Token(Token.TokenClass.LT_OP));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "10"));
 //		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//
 //		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+////
+////		// n = i * j;
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
 //		tokens.add(new Token(Token.TokenClass.ASS_OP));
 //		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
 //		tokens.add(new Token(Token.TokenClass.MULT_OP));
 //		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
 //		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-
-		// if (x == 32)
-//		tokens.add(new Token(Token.TokenClass.IF_KW));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+////
+//////		x = x / 1;
 //		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.EQUAL_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "32"));
+//		tokens.add(new Token(Token.TokenClass.ASS_OP));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.ADD_OP));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
+//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////
+////		//
+////
+////		// )
 //		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//		// (x = x / 1;)
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.ASS_OP));
-		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-		tokens.add(new Token(Token.TokenClass.DIV_OP));
-		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////
+////		// for (int i = 0; i > j; i + 1) (x = i * j;)
+////		tokens.add(new Token(Token.TokenClass.FOR_KW));
+////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+////		tokens.add(new Token(Token.TokenClass.INT_KW));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
+////		tokens.add(new Token(Token.TokenClass.ASS_OP));
+////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
+////		tokens.add(new Token(Token.TokenClass.GT_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
+////		tokens.add(new Token(Token.TokenClass.ADD_OP));
+////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
+////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+////
+////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+////		tokens.add(new Token(Token.TokenClass.ASS_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
+////		tokens.add(new Token(Token.TokenClass.MULT_OP));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
+////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
+////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+//
+//		// if (x == 32)
+////		tokens.add(new Token(Token.TokenClass.IF_KW));
+////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+////		tokens.add(new Token(Token.TokenClass.EQUAL_OP));
+////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "32"));
+////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
+////		// (x = x / 1;)
+////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.ASS_OP));
+//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
+//		tokens.add(new Token(Token.TokenClass.DIV_OP));
+//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
+//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
 //		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
 
 //		tokens.add(new Token(Token.TokenClass.ELSE_KW));
@@ -141,19 +142,24 @@ public class Parser {
 			atomFile = BASE.resolve("atoms");
 			Files.deleteIfExists(atomFile);
 			Files.createFile(atomFile);
+
+			tokenFile = BASE.resolve("tokens");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	public void parse() {
+
+		readTokens(tokenFile);
+
 		// Remove the first token, and start parsing
 		current = tokens.remove();
 
 		try {
 			statement();
 		} catch (IllegalArgumentException e) {
-			System.err.print("Program Rejected\nUnrecognized token: " + current.getName() + "\n");
+			System.err.print("Program Rejected\nUnrecognized token: " + current + "\n");
 			return;
 		}
 
@@ -496,6 +502,17 @@ public class Parser {
 			Files.write(atomFile, atomStrings);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to write atoms to file", e);
+		}
+	}
+
+	public void readTokens(Path tokenFile) {
+		try {
+			var lines = Files.readAllLines(tokenFile);
+			for (String line : lines) { // Loop through every line
+				tokens.add(Token.parseToken(line));
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
