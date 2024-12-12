@@ -217,7 +217,7 @@ public class ScannerPhase {
 			Files.deleteIfExists(tokenFile);
 			Files.createFile(tokenFile);
 
-			tokenFile = BASE.resolve("source");
+			sourceCode = BASE.resolve("source");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -240,6 +240,7 @@ public class ScannerPhase {
 		scan(input);
 
 		// write to file
+		writeTokens();
 
 		// print out
 		for (Token tok : tokens) {
@@ -419,6 +420,21 @@ public class ScannerPhase {
 			return Token.TokenClass.WHILE_KW;
 		default:
 			return Token.TokenClass.IDENTIFIER;
+		}
+	}
+
+	public void writeTokens() {
+
+		List<String> tokenStrings = new ArrayList<>();
+		for (Token tok : tokens) {
+			tokenStrings.add(tok.toString());
+			System.out.println();
+			System.out.println(tok);
+		}
+		try {
+			Files.write(tokenFile, tokenStrings);
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to write atoms to file", e);
 		}
 	}
 }
