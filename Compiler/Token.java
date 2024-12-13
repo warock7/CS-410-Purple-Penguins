@@ -41,13 +41,13 @@ public class Token {
 		line = line.trim();
 
 		// Split the line into parts based on ', ' separator
-		String[] parts = line.split(", ");
+		String[] parts = line.split(", ", 2); // Limit split to 2 parts to preserve the rest for value parsing
 
 		// Extract the class part
 		String classPart = parts[0].split("=")[1]; // Extracts the text after 'class='
 
-		// Extract the value part
-		String valuePart = parts[1].split("=")[1].trim(); // Extracts the text after 'value='
+		// Extract the value part, which starts after 'value='
+		String valuePart = parts[1].substring(parts[1].indexOf("=") + 1).trim();
 
 		// Remove the single quotes around the value (if present)
 		if (valuePart.startsWith("'") && valuePart.endsWith("'")) {
