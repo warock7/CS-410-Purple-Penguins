@@ -21,129 +21,25 @@ public class Parser {
 	private static int labelCounter = 0;
 
 	public static void main(String[] args) {
+		if (args.length < 2) {
+			System.out.println("Usage: java Parser <tokenFile> <atomFile>");
+			return;
+		}
 
-		/*
-		 * This main method sets up a Queue of Tokens with an example statement, Parses
-		 * them, and prints out the resulting atoms.
-		 */
+		Path tokenFile = Paths.get(args[0]);
+		Path atomFile = Paths.get(args[1]);
 
-		// x = - 7;
-//		tokens.add(new Token(Token.TokenClass.INT_KW));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-////		tokens.add(new Token(Token.TokenClass.ASS_OP));
-////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "-7"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-////		tokens.add(new Token(Token.TokenClass.ASS_OP));
-////		tokens.add(new Token(Token.TokenClass.SUB_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "y"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//////
-//////		// int n = 0;
-////		tokens.add(new Token(Token.TokenClass.INT_KW));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
-////		tokens.add(new Token(Token.TokenClass.ASS_OP));
-////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//
-//		// set up tokens queue
-//		// while (x < 10) (
-//		tokens.add(new Token(Token.TokenClass.WHILE_KW));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "x"));
-//		tokens.add(new Token(Token.TokenClass.LT_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "10"));
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-////
-////		// n = i * j;
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "n"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-//		tokens.add(new Token(Token.TokenClass.MULT_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////
-//////		x = x / 1;
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ADD_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////
-////		//
-////
-////		// )
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-////
-////		// for (int i = 0; i > j; i + 1) (x = i * j;)
-////		tokens.add(new Token(Token.TokenClass.FOR_KW));
-////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-////		tokens.add(new Token(Token.TokenClass.INT_KW));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-////		tokens.add(new Token(Token.TokenClass.ASS_OP));
-////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "0"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-////		tokens.add(new Token(Token.TokenClass.GT_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-////		tokens.add(new Token(Token.TokenClass.ADD_OP));
-////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-////
-////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-////		tokens.add(new Token(Token.TokenClass.ASS_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "i"));
-////		tokens.add(new Token(Token.TokenClass.MULT_OP));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "j"));
-////		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-//
-//		// if (x == 32)
-////		tokens.add(new Token(Token.TokenClass.IF_KW));
-////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-////		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-////		tokens.add(new Token(Token.TokenClass.EQUAL_OP));
-////		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "32"));
-////		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-////		// (x = x / 1;)
-////		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.DIV_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-
-//		tokens.add(new Token(Token.TokenClass.ELSE_KW));
-//		tokens.add(new Token(Token.TokenClass.OPEN_PAR));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.ASS_OP));
-//		tokens.add(new Token(Token.TokenClass.IDENTIFIER, "x"));
-//		tokens.add(new Token(Token.TokenClass.MULT_OP));
-//		tokens.add(new Token(Token.TokenClass.INT_LITERAL, "1"));
-//		tokens.add(new Token(Token.TokenClass.SEMI_OP));
-//		tokens.add(new Token(Token.TokenClass.CLOSE_PAR));
-
-		Parser par = new Parser();
-		par.parse();
-
+		Parser parser = new Parser(tokenFile, atomFile);
+		parser.parse();
 	}
 
-	public Parser() {
+	public Parser(Path tokenFile, Path atomFile) {
+		this.tokenFile = tokenFile;
+		this.atomFile = atomFile;
+
 		try {
-			Files.createDirectories(BASE);
-			atomFile = BASE.resolve("atoms");
 			Files.deleteIfExists(atomFile);
 			Files.createFile(atomFile);
-
-			tokenFile = BASE.resolve("tokens");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -433,7 +329,7 @@ public class Parser {
 			return value;
 		} else if (current.getName() == Token.TokenClass.INT_LITERAL
 				|| current.getName() == Token.TokenClass.DOUBLE_LITERAL) {
-			String value = (String) current.getValue();
+			String value = current.getValue().toString();
 			advanceToken();
 			return value;
 		} else if (accept(Token.TokenClass.OPEN_PAR)) {
@@ -509,7 +405,8 @@ public class Parser {
 		try {
 			var lines = Files.readAllLines(tokenFile);
 			for (String line : lines) { // Loop through every line
-				tokens.add(Token.parseToken(line));
+				System.out.println(line);
+				System.out.println(tokens.add(Token.parseToken(line)));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);

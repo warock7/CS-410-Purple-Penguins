@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 public class CodeGenerator {
 
-//	private static final Path BASE = Paths.get("db", "compiler"); // Directories where atom and instruction files exist.
+	private static final Path BASE = Paths.get("db", "compiler"); // Directories where atom and instruction files exist.
 	private Path binaryFile; // File where the machine code will be placed.
 	private Path atomFile; // File of Atoms from Parser, will be read in.
 
@@ -48,28 +48,21 @@ public class CodeGenerator {
 
 	// Main method for testing
 	public static void main(String[] args) {
-		if (args.length < 2) {
-			System.out.println("Usage: java CodeGenerator <atomFile> <binaryFile>");
-			return;
-		}
-
-		Path atomFile = Paths.get(args[0]);
-		Path binaryFile = Paths.get(args[1]);
-
-		CodeGenerator codeGenerator = new CodeGenerator(atomFile, binaryFile);
-		codeGenerator.codeGeneration();
+		CodeGenerator genny = new CodeGenerator();
+		genny.codeGeneration();
 	}
 
 	/**
 	 * Constructor that creates directories and file that will hold the machine code
 	 */
-	public CodeGenerator(Path atomFile, Path binaryFile) {
-		this.atomFile = atomFile;
-		this.binaryFile = binaryFile;
-
+	public CodeGenerator() {
 		try {
+			Files.createDirectories(BASE);
+			binaryFile = BASE.resolve("bytes");
 			Files.deleteIfExists(binaryFile);
 			Files.createFile(binaryFile);
+
+			atomFile = BASE.resolve("atoms");
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -80,6 +73,8 @@ public class CodeGenerator {
 	 * processing them.
 	 */
 	public void codeGeneration() {
+		// Get the atoms from the file
+		atomFile = BASE.resolve("atoms");
 		readAtoms(atomFile);
 		System.out.println(atoms); // Print atoms *FOR TESTING PURPOSES*
 
