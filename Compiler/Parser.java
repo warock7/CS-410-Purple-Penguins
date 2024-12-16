@@ -16,6 +16,7 @@ public class Parser {
 	private static final Path BASE = Paths.get("db", "compiler"); // Directories where atom and instruction files exist.
 	private Path atomFile; // File of Atoms from Parser, will be written to.
 	private Path tokenFile;
+	private static boolean enableGlobal;
 
 	private static int tempCounter = 0;
 	private static int labelCounter = 0;
@@ -29,13 +30,14 @@ public class Parser {
 		Path tokenFile = Paths.get(args[0]);
 		Path atomFile = Paths.get(args[1]);
 
-		Parser parser = new Parser(tokenFile, atomFile);
+		Parser parser = new Parser(tokenFile, atomFile, enableGlobal);
 		parser.parse();
 	}
 
-	public Parser(Path tokenFile, Path atomFile) {
+	public Parser(Path tokenFile, Path atomFile, boolean enableGlobal) {
 		this.tokenFile = tokenFile;
 		this.atomFile = atomFile;
+		Parser.enableGlobal = enableGlobal;
 
 		try {
 			Files.deleteIfExists(atomFile);
@@ -57,6 +59,10 @@ public class Parser {
 		} catch (IllegalArgumentException e) {
 			System.err.print("Program Rejected\nUnrecognized token: " + current + "\n");
 			return;
+		}
+		
+		if(enableGlobal) {
+			globalOptimization(atoms);
 		}
 
 		// Print out the atoms made during the Parse
@@ -412,5 +418,19 @@ public class Parser {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	public static List<Atom> globalOptimization(List<Atom> atoms){
+		for (int i=0; i<atoms.size(); i++) {
+			if (atoms.get(i).getOpcode().equals(Atom.OpCode.JMP)) {
+				i++;
+				
+				while (!atoms.get(i).getOpcode().equals(Atom.OpCode.LBL) && atoms.get(i)!=null) {
+					atoms.remove(i);
+				}
+			}
+		}
+		return atoms;
+	}
+
 
 }
