@@ -13,11 +13,17 @@ public class CompilerDriver {
 		Path tokenFile = Paths.get("tokens.temp");
 		Path atomFile = Paths.get("atoms.temp");
 		Path binaryFile = Paths.get(args[1]);
+		
+		boolean enableGlobal = false;
+
+		if (args.length > 2 && args[2].equals("--enableGlobal")) {
+			enableGlobal = true;
+		}
 
 		Scanner scanner = new Scanner(sourceFile, tokenFile);
 		scanner.start();
 
-		Parser parser = new Parser(tokenFile, atomFile);
+		Parser parser = new Parser(tokenFile, atomFile, enableGlobal);
 		parser.parse();
 
 		CodeGenerator codeGenerator = new CodeGenerator(atomFile, binaryFile);
