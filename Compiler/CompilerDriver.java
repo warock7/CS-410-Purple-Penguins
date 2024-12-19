@@ -5,9 +5,11 @@ import java.util.Map;
 
 public class CompilerDriver {
 
+	private static String usage = "Usage: java CompilerDriver <sourceFile> <tokenFile> [--enableLocal] [--enableGlobal]";
+
 	public static void main(String[] args) {
 		if (args.length < 2) {
-			System.out.println("Usage: java CompilerDriver <sourceFile> <tokenFile>");
+			System.out.println(usage);
 			return;
 		}
 
@@ -16,15 +18,28 @@ public class CompilerDriver {
 		Path atomFile = Paths.get("atoms.temp");
 		Path binaryFile = Paths.get(args[1]);
 
-		HashMap<String, Boolean> argMap = new HashMap<>(Map.of("--enableGlobal", false,
-								       "--enableLocal", false));
-		
+		HashMap<String, Boolean> argMap = new HashMap<>(Map.of("--enableGlobal", false, "--enableLocal", false));
+
+		// Check to see if user passed in an optimization flag
 		if (args.length > 2) {
-			argMap.put(args[2], true);
+			if (args[2].equals("--enableGlobal") || args[2].equals("--enableLocal")) {
+				argMap.put(args[2], true);
+			} else {
+				System.out.println("Invalid option: " + args[2]);
+				System.out.println(usage);
+				return;
+			}
 		}
 
+		// Check to see if user passed in an another optimization flag
 		if (args.length > 3) {
-			argMap.put(args[3], true);
+			if (args[3].equals("--enableGlobal") || args[3].equals("--enableLocal")) {
+				argMap.put(args[3], true);
+			} else {
+				System.out.println("Invalid option: " + args[3]);
+				System.out.println(usage);
+				return;
+			}
 		}
 
 		var scanner = new Scanner(sourceFile, tokenFile);
@@ -36,7 +51,6 @@ public class CompilerDriver {
 		var codeGenerator = new CodeGenerator(atomFile, binaryFile, argMap.get("--enableLocal"));
 		codeGenerator.codeGeneration();
 
-		System.out.println("Compilation completed successfully.");
 	}
 
 }
