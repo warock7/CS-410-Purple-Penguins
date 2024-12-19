@@ -96,10 +96,14 @@ public class CodeGenerator {
 			Object k = kv.getKey();
 			if (k instanceof Integer i) {
 				return i;
-			} else if (k instanceof Double d) {
-				return Float.floatToIntBits(d.floatValue());
 			} else {
-				return 0;
+				Double d = null;
+			        try {
+				        d = Double.valueOf(k.toString());
+			        } catch (NumberFormatException e) {
+				        d = 0.0;
+			        }
+			        return Float.floatToIntBits(d.floatValue());
 			}
 		}).forEach(i -> writeInstruction(i));
 
@@ -206,7 +210,6 @@ public class CodeGenerator {
 				gen(STO, 0, r, addressTable.get(current.getResult()));
 			}
 			}
-			current = atoms.poll();
 		}
 		gen(HLT, 0, 0, 0);
 	}
