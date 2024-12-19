@@ -36,7 +36,7 @@ public class CodeGenerator {
 						// then once done, can just reset and use for next instructions
 
 	// Program Counter
-	static int pc = 0; // probably good enough name, just using to keep track of label values
+	static int pc = 1; // probably good enough name, just using to keep track of label values
 
 	// Label Table
 	// Used during first and second passes
@@ -141,7 +141,7 @@ public class CodeGenerator {
 		for (var current : atoms) {
 			// If current atom is a Label, add it to the table
 			if (current.getOpcode().equals(Atom.OpCode.LBL)) {
-				labelTable.put(current.getDest(), pc);
+				labelTable.put(current.getDest(), pc - 1);
 			}
 			// Increment pc based on OpCodes, different OpCodes require varying number of
 			// instructions
@@ -160,7 +160,8 @@ public class CodeGenerator {
 	@SuppressWarnings("incomplete-switch")
 	public void secondPass() {
 
-		r = 1;
+		r = 2;
+		writeInstruction(1);
 		// Loop through the queue until it is empty
 		while (atoms.size() > 0) {
 
