@@ -23,7 +23,7 @@ public class Parser {
 
 	public static void main(String[] args) {
 		if (args.length < 2) {
-			System.out.println("Usage: java Parser <tokenFile> <atomFile>");
+			System.out.println("Usage: java Parser <tokenFile> <atomFile>  [--enableGlobal]");
 			return;
 		}
 
@@ -60,15 +60,13 @@ public class Parser {
 			System.err.print("Program Rejected\nUnrecognized token: " + current + "\n");
 			return;
 		}
-		
-		if(enableGlobal) {
+
+		if (enableGlobal) {
 			globalOptimization(atoms);
 		}
 
 		// Print out the atoms made during the Parse
 		writeAtoms();
-		// Parsing Worked!
-		System.out.println("Parsing complete");
 	}
 
 	public void statement() {
@@ -411,26 +409,24 @@ public class Parser {
 		try {
 			var lines = Files.readAllLines(tokenFile);
 			for (String line : lines) { // Loop through every line
-				System.out.println(line);
-				System.out.println(tokens.add(Token.parseToken(line)));
+				tokens.add(Token.parseToken(line));
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	public static List<Atom> globalOptimization(List<Atom> atoms){
-		for (int i=0; i<atoms.size(); i++) {
+
+	public static List<Atom> globalOptimization(List<Atom> atoms) {
+		for (int i = 0; i < atoms.size(); i++) {
 			if (atoms.get(i).getOpcode().equals(Atom.OpCode.JMP)) {
 				i++;
-				
-				while (!atoms.get(i).getOpcode().equals(Atom.OpCode.LBL) && atoms.get(i)!=null) {
+
+				while (!atoms.get(i).getOpcode().equals(Atom.OpCode.LBL) && atoms.get(i) != null) {
 					atoms.remove(i);
 				}
 			}
 		}
 		return atoms;
 	}
-
 
 }

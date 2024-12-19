@@ -87,7 +87,6 @@ public class CodeGenerator {
 	 */
 	public void codeGeneration() {
 		readAtoms(atomFile);
-		System.out.println(atoms); // Print atoms *FOR TESTING PURPOSES*
 
 		// First pass logic to build labels
 		buildLabels();
@@ -99,19 +98,19 @@ public class CodeGenerator {
 
 		// Write variables and constants to file
 		addressTable.entrySet().stream().map(kv -> {
-				Object k = kv.getKey();
-				if (k instanceof Integer i) {
-					return i;
-				} else {
-					Double d = null;
-					try {
-						d = Double.valueOf(k.toString());
-					} catch (NumberFormatException e) {
-						d = 0.0;
-					}
-					return Float.floatToIntBits(d.floatValue());
+			Object k = kv.getKey();
+			if (k instanceof Integer i) {
+				return i;
+			} else {
+				Double d = null;
+				try {
+					d = Double.valueOf(k.toString());
+				} catch (NumberFormatException e) {
+					d = 0.0;
 				}
-			}).forEach(i -> instructions.add(i));
+				return Float.floatToIntBits(d.floatValue());
+			}
+		}).forEach(i -> instructions.add(i));
 
 		// Load/store optimization
 		if (enableLocal) {
@@ -120,7 +119,7 @@ public class CodeGenerator {
 
 		instructions.forEach(i -> writeInstruction(i));
 
-		System.out.println(labelTable);
+		// System.out.println(labelTable);
 	}
 
 	/**
@@ -139,10 +138,10 @@ public class CodeGenerator {
 		word |= (cmp & 0xF) << 24; // add cmp
 		word |= (r & 0xF) << 20; // add register
 		word |= (address & 0xFFFFF); // add address
-		System.out.printf("%d, %d, %d, %d\t", op, cmp, r, address);
-		System.out.println(String.format("%32s", Integer.toBinaryString(word)).replace(' ', '0')); // Print instruction
-																									// out *FOR TESTING
-																									// PURPOSES*
+//		System.out.printf("%d, %d, %d, %d\t", op, cmp, r, address);
+//		System.out.println(String.format("%32s", Integer.toBinaryString(word)).replace(' ', '0')); // Print instruction
+		// out *FOR TESTING
+		// PURPOSES*
 
 		instructions.add(word);
 	}
@@ -274,9 +273,8 @@ public class CodeGenerator {
 			// If this instruction is a store, the next instruction is a load,
 			// and both instructions use the same memory, then remove the
 			// memory location and the instructions and update accordingly
-			if (instructions.get(i) >>> 28 == STO
-			    && instructions.get(i + 1) >>> 28 == LOD
-			    && ((instructions.get(i) ^ instructions.get(i + 1)) & 0xfffff) == 0) {
+			if (instructions.get(i) >>> 28 == STO && instructions.get(i + 1) >>> 28 == LOD
+					&& ((instructions.get(i) ^ instructions.get(i + 1)) & 0xfffff) == 0) {
 				int oldAddr = instructions.get(i) & 0xfffff;
 				instructions.remove(oldAddr);
 				instructions.remove(i);
@@ -295,7 +293,7 @@ public class CodeGenerator {
 					}
 				}
 				i--;
-		        }
-                }
+			}
+		}
 	}
 }
