@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -16,6 +17,7 @@ public class CodeGenerator {
 //	private static final Path BASE = Paths.get("db", "compiler"); // Directories where atom and instruction files exist.
 	private Path binaryFile; // File where the machine code will be placed.
 	private Path atomFile; // File of Atoms from Parser, will be read in.
+	private static boolean enableLocal;
 
 	private static Queue<Atom> atoms = new LinkedList<Atom>(); // Queue to hold atoms
 
@@ -46,6 +48,9 @@ public class CodeGenerator {
 	// Used during the second pass
 	static HashMap<Object, Integer> addressTable = new LinkedHashMap<>();
 
+	// List of instructions
+	static ArrayList<Integer> instructions = new ArrayList<>();
+
 	// Main method for testing
 	public static void main(String[] args) {
 		if (args.length < 2) {
@@ -56,16 +61,17 @@ public class CodeGenerator {
 		Path atomFile = Paths.get(args[0]);
 		Path binaryFile = Paths.get(args[1]);
 
-		CodeGenerator codeGenerator = new CodeGenerator(atomFile, binaryFile);
+		CodeGenerator codeGenerator = new CodeGenerator(atomFile, binaryFile, enableLocal);
 		codeGenerator.codeGeneration();
 	}
 
 	/**
 	 * Constructor that creates directories and file that will hold the machine code
 	 */
-	public CodeGenerator(Path atomFile, Path binaryFile) {
+	public CodeGenerator(Path atomFile, Path binaryFile, boolean enableLocal) {
 		this.atomFile = atomFile;
 		this.binaryFile = binaryFile;
+		CodeGenerator.enableLocal = enableLocal;
 
 		try {
 			Files.deleteIfExists(binaryFile);
@@ -93,19 +99,26 @@ public class CodeGenerator {
 
 		// Write variables and constants to file
 		addressTable.entrySet().stream().map(kv -> {
-			Object k = kv.getKey();
-			if (k instanceof Integer i) {
-				return i;
-			} else {
-				Double d = null;
-			        try {
-				        d = Double.valueOf(k.toString());
-			        } catch (NumberFormatException e) {
-				        d = 0.0;
-			        }
-			        return Float.floatToIntBits(d.floatValue());
-			}
-		}).forEach(i -> writeInstruction(i));
+				Object k = kv.getKey();
+				if (k instanceof Integer i) {
+					return i;
+				} else {
+					Double d = null;
+					try {
+						d = Double.valueOf(k.toString());
+					} catch (NumberFormatException e) {
+						d = 0.0;
+					}
+					return Float.floatToIntBits(d.floatValue());
+				}
+			}).forEach(i -> instructions.add(i));
+
+		// Load/store optimization
+		if (enableLocal) {
+			localOptimization();
+		}
+
+		instructions.forEach(i -> writeInstruction(i));
 
 		System.out.println(labelTable);
 	}
@@ -131,7 +144,7 @@ public class CodeGenerator {
 																									// out *FOR TESTING
 																									// PURPOSES*
 
-		writeInstruction(word); // write the instruction to the file.
+		instructions.add(word);
 	}
 
 	// First pass
@@ -161,7 +174,7 @@ public class CodeGenerator {
 	public void secondPass() {
 
 		r = 2;
-		writeInstruction(1);
+		instructions.add(0x00000001);
 		// Loop through the queue until it is empty
 		while (atoms.size() > 0) {
 
@@ -253,5 +266,36 @@ public class CodeGenerator {
 			throw new RuntimeException(e);
 		}
 
+	}
+
+	void localOptimization() {
+		// For all instructions before the halt
+		for (int i = 0; instructions.get(i) >>> 28 != HLT; i++) {
+			// If this instruction is a store, the next instruction is a load,
+			// and both instructions use the same memory, then remove the
+			// memory location and the instructions and update accordingly
+			if (instructions.get(i) >>> 28 == STO
+			    && instructions.get(i + 1) >>> 28 == LOD
+			    && ((instructions.get(i) ^ instructions.get(i + 1)) & 0xfffff) == 0) {
+				int oldAddr = instructions.get(i) & 0xfffff;
+				instructions.remove(oldAddr);
+				instructions.remove(i);
+				instructions.remove(i);
+				for (int j = 0; instructions.get(j) >>> 28 != HLT; j++) {
+					int addr = instructions.get(j) & 0xfffff;
+					int diff = 0;
+					if (addr > i) {
+						diff += 2;
+					}
+					if (addr > oldAddr) {
+						diff += 1;
+					}
+					if (diff > 0) {
+						instructions.set(j, instructions.get(j) - diff);
+					}
+				}
+				i--;
+		        }
+                }
 	}
 }
